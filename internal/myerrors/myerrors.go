@@ -9,4 +9,6 @@ var (
 	ErrCompile     = errors.New("compiling failed")
 	ErrFlagParse   = errors.New("could not parse flags")
 	ErrHelp        = errors.New("help")
+	ErrNoFactor    = errors.New("no factor")
+	ErrNoTerm      = errors.New("no term")
 )
