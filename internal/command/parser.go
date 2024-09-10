@@ -9,18 +9,24 @@ factor = number | "(" expression ")"
 */
 
 import (
+	"fmt"
+
 	"github.com/korepanov/cari/internal/grammar"
 	"github.com/korepanov/cari/internal/lexemes"
 	"github.com/korepanov/cari/internal/myast"
 	"github.com/korepanov/cari/internal/myerrors"
 )
 
-func factor(in []lexemes.Token) (ast myast.Node, out []lexemes.Token, err error) {
+func factor(in []lexemes.Token) (ast myast.Node, err error) {
+	if len(in) == 0 {
+		return myast.Node{}, myerrors.ErrNoFactor
+	}
+
 	if len(in) == 1 {
 		if in[0].T == lexemes.NumberLexeme {
 			var node myast.Node
 			node.Value = in[0]
-			return node, []lexemes.Token{}, nil
+			return node, nil
 		}
 	}
 
@@ -29,42 +35,106 @@ func factor(in []lexemes.Token) (ast myast.Node, out []lexemes.Token, err error)
 		return parse(in)
 	}
 
-	return myast.Node{}, []lexemes.Token{}, myerrors.ErrNoFactor
+	return myast.Node{}, myerrors.ErrNoFactor
 }
 
-func term(in []lexemes.Token) (ast myast.Node, out []lexemes.Token, err error) {
-	factorAst, out, err := factor(in)
+func term(in []lexemes.Token) (ast myast.Node, err error) {
+	factorAst, err := factor(in)
 	i := 1
 
-	for err != nil && i > 0 {
-		factorAst, _, err = factor(in[i:])
-		if err != nil {
-			i++
-		}
+	for err != nil && i < len(in) {
+		factorAst, err = factor(in[i:])
+		i++
 	}
+	i--
 
 	if err != nil {
 		return
 	}
 
-	//f := in[i:]
 	if i > 0 {
 		token := in[i-1]
 		if token.T == lexemes.Operator && (token.Lex == "*" || token.Lex == "/") {
+			t := in[:i-1]
 
+			var termAst myast.Node
+
+			ast.Value = token
+			termAst, err = term(t)
+
+			if err != nil {
+				return
+			}
+
+			ast.Children = append(ast.Children, &termAst)
+			ast.Children = append(ast.Children, &factorAst)
+
+			return ast, nil
 		}
 
 	}
 
+	if i == 0 {
+		return factorAst, nil
+	}
+
+	return ast, myerrors.ErrNoTerm
+}
+
+func expr(in []lexemes.Token) (ast myast.Node, err error) {
+	termAst, err := term(in)
+	i := 1
+
+	for err != nil && i < len(in) {
+		termAst, err = term(in[i:])
+		i++
+	}
+	i--
+
+	if err != nil {
+		return
+	}
+
+	if i > 0 {
+		token := in[i-1]
+		if token.T == lexemes.Operator && (token.Lex == "+" || token.Lex == "-") {
+			t := in[:i-1]
+
+			var exprAst myast.Node
+
+			ast.Value = token
+			exprAst, err = expr(t)
+
+			if err != nil {
+				return
+			}
+
+			ast.Children = append(ast.Children, &exprAst)
+			ast.Children = append(ast.Children, &termAst)
+
+			return ast, nil
+		}
+
+	}
+
+	if i == 0 {
+		return termAst, nil
+	}
+
+	return ast, myerrors.ErrNoExpr
+}
+
+func parse(in []lexemes.Token) (ast myast.Node, err error) {
+	ast, err = expr(in)
 	return
 }
 
-func parse(expr []lexemes.Token) (ast myast.Node, out []lexemes.Token, err error) {
-	return term(expr)
-}
+func (c *Command) Parse() (err error) {
+	c.Ast, err = parse(c.Tokens)
 
-func (c *Command) Parse() error {
-	parse(c.Tokens)
+	if err != nil {
+		return fmt.Errorf("%s : %s", myerrors.ErrParse, err)
+	}
 
 	return nil
 }

@@ -53,11 +53,12 @@ func (p *Program) parse() error {
 	root.T = lexemes.StartLexeme
 	p.Ast.Value = root
 
-	for i, command := range p.Input {
-		err := command.Parse()
+	for i := 0; i < len(p.Input); i++ {
+		err := p.Input[i].Parse()
 		if err != nil {
-			return fmt.Errorf("%s\n%d\t%s", err, i+1, command.Input)
+			return fmt.Errorf("%s\n%d\t%s", err, i+1, p.Input[i].Input)
 		}
+		p.Ast.Children = append(p.Ast.Children, &p.Input[i].Ast)
 	}
 
 	return nil

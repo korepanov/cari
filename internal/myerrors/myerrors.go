@@ -11,4 +11,6 @@ var (
 	ErrHelp        = errors.New("help")
 	ErrNoFactor    = errors.New("no factor")
 	ErrNoTerm      = errors.New("no term")
+	ErrNoExpr      = errors.New("no expression")
+	ErrParse       = errors.New("parsing failed")
 )
