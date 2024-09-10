@@ -32,7 +32,7 @@ func factor(in []lexemes.Token) (ast myast.Node, err error) {
 
 	if in[0].T == lexemes.Delimiter && in[0].Lex == "(" &&
 		in[len(in)-1].T == lexemes.Delimiter && in[len(in)-1].Lex == ")" {
-		return parse(in)
+		return parse(in[1 : len(in)-1])
 	}
 
 	return myast.Node{}, myerrors.ErrNoFactor
