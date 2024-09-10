@@ -12,6 +12,7 @@ import (
 type dispatcher struct {
 	iFlag      string
 	oFlag      string
+	astFlag    bool
 	inputFile  *os.File
 	outputFile *os.File
 	stdout     *os.File
@@ -59,6 +60,11 @@ func (d *dispatcher) compile() compileErrorT {
 		return d.compileError(err)
 	}
 
+	if d.astFlag {
+		d.input.Ast.Print()
+		return compileErrorT{}
+	}
+
 	err = d.prepareOutputFile()
 
 	if err != nil {
@@ -83,6 +89,7 @@ func (d *dispatcher) compileError(err error) compileErrorT {
 }
 
 var help = flag.Bool("h", false, "show help")
+var astFlag = flag.Bool("ast", false, "show ast")
 var iFlag = "-i"
 var oFlag = "-o"
 
@@ -111,6 +118,7 @@ func (d *dispatcher) processFlags() error {
 	}
 
 	d.oFlag = oFlag
+	d.astFlag = *astFlag
 
 	return nil
 }
