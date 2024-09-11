@@ -17,16 +17,19 @@ import (
 	"github.com/korepanov/cari/internal/myerrors"
 )
 
-func factor(in []lexemes.Token) (ast myast.Node, err error) {
+func factor(in []lexemes.Token) (ast myast.Ast, err error) {
+	ast = myast.NewAst()
+
 	if len(in) == 0 {
-		return myast.Node{}, myerrors.ErrNoFactor
+		return ast, myerrors.ErrNoFactor
 	}
 
 	if len(in) == 1 {
 		if in[0].T == lexemes.NumberLexeme {
 			var node myast.Node
 			node.Value = in[0]
-			return node, nil
+			ast.AppendNode(ast.Root.MyId(), &node)
+			return ast, nil
 		}
 	}
 
@@ -35,10 +38,12 @@ func factor(in []lexemes.Token) (ast myast.Node, err error) {
 		return parse(in[1 : len(in)-1])
 	}
 
-	return myast.Node{}, myerrors.ErrNoFactor
+	return ast, myerrors.ErrNoFactor
 }
 
-func term(in []lexemes.Token) (ast myast.Node, err error) {
+func term(in []lexemes.Token) (ast myast.Ast, err error) {
+	ast = myast.NewAst()
+
 	factorAst, err := factor(in)
 	i := 1
 
@@ -57,17 +62,21 @@ func term(in []lexemes.Token) (ast myast.Node, err error) {
 		if token.T == lexemes.Operator && (token.Lex == "*" || token.Lex == "/") {
 			t := in[:i-1]
 
-			var termAst myast.Node
+			var termAst myast.Ast
 
-			ast.Value = token
+			ast.Root.Value = token
 			termAst, err = term(t)
 
 			if err != nil {
 				return
 			}
 
+			ast.Append(ast.Root.MyId(), &termAst)
+			ast.Append(ast.Root.MyId(), &factorAst)
+			/*termAst.Parent = &ast
+			factorAst.Parent = &ast
 			ast.Children = append(ast.Children, &termAst)
-			ast.Children = append(ast.Children, &factorAst)
+			ast.Children = append(ast.Children, &factorAst)*/
 
 			return ast, nil
 		}
@@ -81,7 +90,9 @@ func term(in []lexemes.Token) (ast myast.Node, err error) {
 	return ast, myerrors.ErrNoTerm
 }
 
-func expr(in []lexemes.Token) (ast myast.Node, err error) {
+func expr(in []lexemes.Token) (ast myast.Ast, err error) {
+	ast = myast.NewAst()
+
 	termAst, err := term(in)
 	i := 1
 
@@ -100,17 +111,21 @@ func expr(in []lexemes.Token) (ast myast.Node, err error) {
 		if token.T == lexemes.Operator && (token.Lex == "+" || token.Lex == "-") {
 			t := in[:i-1]
 
-			var exprAst myast.Node
+			var exprAst myast.Ast
 
-			ast.Value = token
+			ast.Root.Value = token
 			exprAst, err = expr(t)
 
 			if err != nil {
 				return
 			}
 
+			ast.Append(ast.Root.MyId(), &exprAst)
+			ast.Append(ast.Root.MyId(), &termAst)
+			/*exprAst.Parent = &ast
+			termAst.Parent = &ast
 			ast.Children = append(ast.Children, &exprAst)
-			ast.Children = append(ast.Children, &termAst)
+			ast.Children = append(ast.Children, &termAst)*/
 
 			return ast, nil
 		}
@@ -124,7 +139,7 @@ func expr(in []lexemes.Token) (ast myast.Node, err error) {
 	return ast, myerrors.ErrNoExpr
 }
 
-func parse(in []lexemes.Token) (ast myast.Node, err error) {
+func parse(in []lexemes.Token) (ast myast.Ast, err error) {
 	ast, err = expr(in)
 	return
 }

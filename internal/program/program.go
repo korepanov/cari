@@ -6,14 +6,13 @@ import (
 	"os"
 
 	"github.com/korepanov/cari/internal/command"
-	"github.com/korepanov/cari/internal/lexemes"
 	"github.com/korepanov/cari/internal/myast"
 	"github.com/korepanov/cari/internal/myerrors"
 )
 
 type Program struct {
 	Input []command.Command
-	Ast   myast.Node
+	Ast   myast.Ast
 }
 
 func (p *Program) ReadProgram() error {
@@ -48,17 +47,14 @@ func (p *Program) lexicalAnalyze() error {
 }
 
 func (p *Program) parse() error {
-	var root lexemes.Token
-	root.Lex = "start"
-	root.T = lexemes.StartLexeme
-	p.Ast.Value = root
+	p.Ast = myast.NewAst()
 
 	for i := 0; i < len(p.Input); i++ {
 		err := p.Input[i].Parse()
 		if err != nil {
 			return fmt.Errorf("%s\n%d\t%s", err, i+1, p.Input[i].Input)
 		}
-		p.Ast.Children = append(p.Ast.Children, &p.Input[i].Ast)
+		p.Ast.Append(p.Ast.Root.MyId(), &p.Input[i].Ast)
 	}
 
 	return nil

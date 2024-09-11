@@ -13,4 +13,5 @@ var (
 	ErrNoTerm      = errors.New("no term")
 	ErrNoExpr      = errors.New("no expression")
 	ErrParse       = errors.New("parsing failed")
+	ErrNoNode      = errors.New("no node")
 )

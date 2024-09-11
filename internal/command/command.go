@@ -10,5 +10,5 @@ type Command struct {
 	subinput  string // to copy Input and work with it inside package
 	Tokens    []lexemes.Token
 	subtokens []lexemes.Token
-	Ast       myast.Node
+	Ast       myast.Ast
 }
