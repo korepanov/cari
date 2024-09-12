@@ -29,7 +29,7 @@ func (d *dictionary) initStopList() {
 	d.stopList = append(d.stopList, lexemes.Operator)
 }
 
-// to stop lexical analysis and return the previous token?
+// The IsStop checks if we need to stop lexical analysis and return the previous token.
 func (d *dictionary) IsStop(t lexemes.LexemeType) bool {
 	for _, val := range d.stopList {
 		if val == t {
@@ -49,9 +49,9 @@ func (d *dictionary) Find(lex lexemes.Lexeme) lexemes.LexemeType {
 }
 
 /*
-finds value v of type T in the map[T2][]T
-if value found return key of type T2
-if value was not found return zero value of type T2
+The find finds value v of type T in the map[T2][]T.
+If value found returns key of type T2.
+If value was not found returns zero value of type T2.
 */
 func find[T comparable, T2 comparable](m map[T2][]T, v T) T2 {
 	for key, vals := range m {
@@ -68,9 +68,9 @@ func find[T comparable, T2 comparable](m map[T2][]T, v T) T2 {
 }
 
 /*
-can the lexeme to be an number?
-return NumberLexeme if lexeme can be a number
-else - 0
+The isNumber checks can the lexeme to be an number.
+Returns NumberLexeme if lexeme can be a number,
+else - 0.
 */
 func isNumber(lex lexemes.Lexeme) lexemes.LexemeType {
 	_, err := strconv.ParseFloat(string(lex), 64)

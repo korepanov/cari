@@ -19,6 +19,12 @@ type Ast struct {
 	Root   *Node
 }
 
+func NewNode(v lexemes.Token) Node {
+	var n Node
+	n.Value = v
+	return n
+}
+
 func NewAst() Ast {
 	var ast Ast
 	var node Node
@@ -32,68 +38,88 @@ func NewAst() Ast {
 	return ast
 }
 
-func (a *Ast) AppendNode(parentId int, v *Node) {
+/*
+The MustAppendNode appends node v to the node with id=parentId of the ast a.
+Panics if fails to find the node with id=parentId in the ast a.
+*/
+func (a *Ast) MustAppendNode(parentId int, v *Node) (id int) {
 	node, err := a.Node(parentId)
-	if node == nil {
-		panic(fmt.Errorf("%s, id: %d", myerrors.ErrNoNode, parentId))
+	if err != nil {
+		panic(fmt.Errorf("%s : %s, id: %d", myerrors.ErrAppendNode, err, parentId))
 	}
+
 	node.Children = append(node.Children, v)
 	v.Parent = node
 	v.id = a.nextId
 	a.nextId++
-	fmt.Printf("%v\n", node)
-	fmt.Printf("%v\n", a.Root)
-}
 
-func (a *Ast) Append(parentId int, v *Ast) {
-	for _, child := range v.Root.Children {
-		a.AppendNode(parentId, child)
-	}
+	return v.id
 }
 
 /*
-	func (a *Ast) Append(parentId int, v *Ast) {
-		for i := 0; i < len(v.Root.Children); i++ {
-			a.lastNode.Children = append(a.lastNode.Children, v.Root.Children[i])
-			v.Root.Children[i].Parent = a.lastNode
-			v.Root.Children[i].Id += a.nextId
-		}
-
-		a.lastNode = v.Root.Children[len(v.Root.Children)-1]
-		a.nextId += len(v.Root.Children)
-	}
+The MustAppend appends the root of the ast v to the node with parentId of the ast a.
+Panics is fails to find the node with id=parentId in the ast a.
 */
-func (n Node) MyId() int {
+func (a *Ast) MustAppend(parentId int, v *Ast) {
+	var parents []*Node
+	parents = append(parents, v.Root)
+	id := parentId
+
+	for _, parent := range parents {
+		for _, child := range parent.Children {
+			if child.Parent.id == v.Root.id {
+				a.MustAppendNode(id, child)
+			} else {
+				child.id = a.nextId
+				a.nextId++
+			}
+			parents = append(parents, child)
+		}
+	}
+}
+
+func (n *Node) MyId() int {
 	return n.id
 }
 
-func (a *Ast) Node(id int) (Node, error) {
+func (a *Ast) Node(id int) (*Node, error) {
 	return a.Root.findNodeById(id)
 }
 
-func (n Node) findNodeById(id int) (Node, error) {
+/*
+The findNodeById returns *Node by it's id scanning the nodes from n as root.
+Returns ErrNoNode if there is no node with such id.
+*/
+func (n *Node) findNodeById(id int) (res *Node, err error) {
 	if n.id == id {
 		return n, nil
 	}
 	for _, child := range n.Children {
-		child.findNodeById(id)
+		res, err = child.findNodeById(id)
+		if err == nil {
+			return
+		}
 	}
 
 	return n, myerrors.ErrNoNode
 }
 
-func (n Node) printInLevel(level int) {
+/*
+The printInLevel prints the lexeme of the node to the terminal with format of the level in the ast.
+*/
+func (n *Node) printInLevel(level int) {
 
 	for i := 0; i < level; i++ {
 		fmt.Print("   ")
 	}
 
 	if level != 0 {
-		if n.Parent == nil || n.Parent.Children[len(n.Parent.Children)-1] == &n {
+		if n.Parent == nil || n.Parent.Children[len(n.Parent.Children)-1].id == n.id {
 			fmt.Print("└─ ")
 		} else {
 			fmt.Print("├─ ")
 		}
+		// │
 	}
 	//if len(n.Children) > 0 {
 
@@ -106,6 +132,7 @@ func (n Node) printInLevel(level int) {
 	}
 }
 
+// The Print prints the ast in the terminal.
 func (a *Ast) Print() {
 	a.Root.printInLevel(0)
 }

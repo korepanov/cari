@@ -11,12 +11,15 @@ factor = number | "(" expression ")"
 import (
 	"fmt"
 
-	"github.com/korepanov/cari/internal/grammar"
 	"github.com/korepanov/cari/internal/lexemes"
 	"github.com/korepanov/cari/internal/myast"
 	"github.com/korepanov/cari/internal/myerrors"
 )
 
+/*
+The factor makes ast of the factor in the in variable.
+Returns error if in variable is not the factor.
+*/
 func factor(in []lexemes.Token) (ast myast.Ast, err error) {
 	ast = myast.NewAst()
 
@@ -26,9 +29,9 @@ func factor(in []lexemes.Token) (ast myast.Ast, err error) {
 
 	if len(in) == 1 {
 		if in[0].T == lexemes.NumberLexeme {
-			var node myast.Node
-			node.Value = in[0]
-			ast.AppendNode(ast.Root.MyId(), &node)
+			node := myast.NewNode(in[0])
+			ast.MustAppendNode(ast.Root.MyId(), &node)
+
 			return ast, nil
 		}
 	}
@@ -41,6 +44,10 @@ func factor(in []lexemes.Token) (ast myast.Ast, err error) {
 	return ast, myerrors.ErrNoFactor
 }
 
+/*
+The term makes ast of the term in the in variable.
+Returns error if in variable is not the term.
+*/
 func term(in []lexemes.Token) (ast myast.Ast, err error) {
 	ast = myast.NewAst()
 
@@ -64,19 +71,17 @@ func term(in []lexemes.Token) (ast myast.Ast, err error) {
 
 			var termAst myast.Ast
 
-			ast.Root.Value = token
+			node := myast.NewNode(token)
+			nodeId := ast.MustAppendNode(ast.Root.MyId(), &node)
+
 			termAst, err = term(t)
 
 			if err != nil {
 				return
 			}
 
-			ast.Append(ast.Root.MyId(), &termAst)
-			ast.Append(ast.Root.MyId(), &factorAst)
-			/*termAst.Parent = &ast
-			factorAst.Parent = &ast
-			ast.Children = append(ast.Children, &termAst)
-			ast.Children = append(ast.Children, &factorAst)*/
+			ast.MustAppend(nodeId, &termAst)
+			ast.MustAppend(nodeId, &factorAst)
 
 			return ast, nil
 		}
@@ -90,6 +95,10 @@ func term(in []lexemes.Token) (ast myast.Ast, err error) {
 	return ast, myerrors.ErrNoTerm
 }
 
+/*
+The expr makes ast of the expr in the in variable.
+Returns error if in variable is not the expr.
+*/
 func expr(in []lexemes.Token) (ast myast.Ast, err error) {
 	ast = myast.NewAst()
 
@@ -112,20 +121,19 @@ func expr(in []lexemes.Token) (ast myast.Ast, err error) {
 			t := in[:i-1]
 
 			var exprAst myast.Ast
+			var node myast.Node
+			node.Parent = ast.Root
+			node.Value = token
+			nodeId := ast.MustAppendNode(ast.Root.MyId(), &node)
 
-			ast.Root.Value = token
 			exprAst, err = expr(t)
 
 			if err != nil {
 				return
 			}
 
-			ast.Append(ast.Root.MyId(), &exprAst)
-			ast.Append(ast.Root.MyId(), &termAst)
-			/*exprAst.Parent = &ast
-			termAst.Parent = &ast
-			ast.Children = append(ast.Children, &exprAst)
-			ast.Children = append(ast.Children, &termAst)*/
+			ast.MustAppend(nodeId, &exprAst)
+			ast.MustAppend(nodeId, &termAst)
 
 			return ast, nil
 		}
@@ -152,9 +160,4 @@ func (c *Command) Parse() (err error) {
 	}
 
 	return nil
-}
-
-type grammarNode struct {
-	T     grammar.GrammarType
-	Token []lexemes.Token
 }

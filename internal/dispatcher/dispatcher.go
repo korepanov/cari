@@ -54,7 +54,9 @@ func (d *dispatcher) compile() compileErrorT {
 		return d.compileError(err)
 	}
 
-	err = d.input.ReadProgram()
+	d.input.ReadProgram()
+
+	err = d.input.AnalyzeProgram()
 
 	if err != nil {
 		return d.compileError(err)

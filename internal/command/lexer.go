@@ -7,7 +7,7 @@ import (
 	"github.com/korepanov/cari/internal/myerrors"
 )
 
-// looks ahead to the next shortest token but does not remove the token from subinput
+// The lookAhead looks ahead to the next shortest token but does not remove the token from subinput.
 func (c *Command) lookAhead() (lexemes.Token, error) {
 	var buf string
 
@@ -27,7 +27,7 @@ func (c *Command) lookAhead() (lexemes.Token, error) {
 	return lexemes.Token{Lex: lexemes.Lexeme(buf), T: 0}, myerrors.ErrNoToken
 }
 
-// gets next longest token and removes this token from subinput
+// The nextToken gets next longest token and removes this token from subinput.
 func (c *Command) nextToken() (lexemes.Token, error) {
 
 	var newToken lexemes.Token

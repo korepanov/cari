@@ -14,4 +14,5 @@ var (
 	ErrNoExpr      = errors.New("no expression")
 	ErrParse       = errors.New("parsing failed")
 	ErrNoNode      = errors.New("no node")
+	ErrAppendNode  = errors.New("appending node failed")
 )

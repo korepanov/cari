@@ -15,13 +15,20 @@ type Program struct {
 	Ast   myast.Ast
 }
 
-func (p *Program) ReadProgram() error {
-
+/*
+The ReadProgram reads the program from os.Stdin.
+*/
+func (p *Program) ReadProgram() {
 	s := bufio.NewScanner(os.Stdin)
 
 	for p.nextCommand(s) {
 	}
+}
 
+/*
+The AnalyzeProgram makes lexical analysis and parses the program.
+*/
+func (p *Program) AnalyzeProgram() error {
 	err := p.lexicalAnalyze()
 	if err != nil {
 		return fmt.Errorf("%s : %s", myerrors.ErrRead, err)
@@ -54,12 +61,15 @@ func (p *Program) parse() error {
 		if err != nil {
 			return fmt.Errorf("%s\n%d\t%s", err, i+1, p.Input[i].Input)
 		}
-		p.Ast.Append(p.Ast.Root.MyId(), &p.Input[i].Ast)
+		p.Ast.MustAppend(p.Ast.Root.MyId(), &p.Input[i].Ast)
 	}
 
 	return nil
 }
 
+/*
+The WriteProgram writes the program to the os.Stdout.
+*/
 func (p *Program) WriteProgram() {
 	for _, command := range p.Input {
 		for _, token := range command.Tokens {
@@ -69,7 +79,9 @@ func (p *Program) WriteProgram() {
 	}
 }
 
-// reads next command in the command input
+/*
+The nextCommand reads next command in the command input.
+*/
 func (p *Program) nextCommand(s *bufio.Scanner) bool {
 	if !s.Scan() {
 		return false
