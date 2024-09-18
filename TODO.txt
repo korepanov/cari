@@ -1,2 +1,2 @@
-1. Unary minus
+2. Remove folder .vscode from github 
 

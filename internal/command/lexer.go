@@ -57,7 +57,18 @@ loop:
 
 	if len(newToken.Lex) == 0 {
 		newToken, err := c.lookAhead()
+
+		if err != nil {
+			return newToken, err
+		}
+
 		c.subinput = c.subinput[len(newToken.Lex):]
+
+		if newToken.Lex == "-" { // unary minus
+			newToken, err = c.nextToken()
+			newToken.Lex = "-" + newToken.Lex
+		}
+
 		return newToken, err
 	}
 
