@@ -5,7 +5,6 @@ import (
 
 	"github.com/korepanov/cari/internal/lexemes"
 	"github.com/korepanov/cari/internal/myerrors"
-	"github.com/korepanov/cari/pkg/mytools"
 )
 
 type Node struct {
@@ -109,14 +108,16 @@ func (n *Node) findNodeById(id int) (res *Node, err error) {
 The printInLevel prints the lexeme of the node to the terminal with format of the level in the ast.
 Returns branchLevels where ├─ or │ was printed.
 Wants prevBranchLevels which is the branchLevels from the previos call.
-Set prevBranchLevels = []int{} if there was no previous call.
+Set prevBranchLevels = map[int]struct{}{} if there was no previous call.
 */
-func (n *Node) printInLevel(level int, prevBranchLevels []int) (branchLevels []int) {
+func (n *Node) printInLevel(level int, prevBranchLevels map[int]struct{}) (branchLevels map[int]struct{}) {
+	branchLevels = make(map[int]struct{})
 
 	for i := 0; i < level; i++ {
-		if mytools.Contains(prevBranchLevels, i) {
+		_, ok := prevBranchLevels[i]
+		if ok {
 			fmt.Print("│  ")
-			branchLevels = append(branchLevels, i)
+			branchLevels[i] = struct{}{}
 		} else {
 			fmt.Print("   ")
 		}
@@ -127,7 +128,7 @@ func (n *Node) printInLevel(level int, prevBranchLevels []int) (branchLevels []i
 			fmt.Print("└─ ")
 		} else {
 			fmt.Print("├─ ")
-			branchLevels = append(branchLevels, level)
+			branchLevels[level] = struct{}{}
 		}
 	}
 
@@ -142,5 +143,5 @@ func (n *Node) printInLevel(level int, prevBranchLevels []int) (branchLevels []i
 
 // The Print prints the ast in the terminal.
 func (a *Ast) Print() {
-	a.Root.printInLevel(0, []int{})
+	a.Root.printInLevel(0, map[int]struct{}{})
 }
