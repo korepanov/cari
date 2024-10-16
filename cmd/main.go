@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-
+	// test
 	err := dispatcher.Compile()
 
 	if err == myerrors.ErrHelp {
