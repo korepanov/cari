@@ -7,7 +7,7 @@ one:
 ten:
 .float 10.0
 t1:
-.float 10
+.float 10.3
 t2:
 .float 20
 t3:
@@ -16,6 +16,9 @@ t4:
 .float 40 
 t5:
 .float 4 
+message:
+.ascii "Mymessage"
+.space 1,0
 
 .bss
 buf:
@@ -35,38 +38,23 @@ res4:
 
 .text
 
-.macro len
- push %rsi 
- push %rdx
- xor %rax, %rax 
- __lenLocal:
- mov (%rsi), %dl	
- cmp $0, %dl	
- jz  __lenEx				    
- inc %rsi		  	
- inc %rax 	    
- jmp __lenLocal  
-__lenEx:
- pop %rdx
- pop %rsi
+.macro len m:req 
+ xor %rax, %rax 	
+ .if \m
+ inc %rax 
+ len "(\m+1)"	
+ .endif		    	  		    
+
  .endm
 
-.macro print 
- push %rdi 
- push %rdx
- 
- __printBegin:
- len		
+.macro print m:req
+ len m		
  mov $1, %rdi	
  mov $1, %rdx	
  syscall		    
-
- pop %rdx
- pop %rdi
- 
 .endm
 
-.macro toStr
+/*.macro toStr
  # число в %rax 
  # подготовка преобразования числа в строку
   movq $0, (buf2)
@@ -142,9 +130,10 @@ __floatToStrOk:
 cvtss2si \f, %rax # здесь содержится дробное значение 
 toStr
 mov $buf2, %rsi 
+mark:
 print
 .endm
-
+*/
 
 
 .globl _start
@@ -153,7 +142,8 @@ fld (t2)
 fsub (t1)
 fstp (res1)
 
-printFloat (res1)
+print $message
+#printFloat (res1)
 
 mov $60,  %rax
 xor %rdi, %rdi 
