@@ -38,21 +38,41 @@ res4:
 
 .text
 
-.macro len m:req 
- xor %rax, %rax 	
- .if \m
- inc %rax 
- len "(\m+1)"	
- .endif		    	  		    
+# len of the string from %rsi address to the 0 byte 
+# %rax - result
+ .macro len m:req
+ 
+ push %rdx 
+ push \m
+ xor %rax, %rax 
+ 1:
+ mov (\m), %dl	
+ cmp $0, %dl	
+ jz  2f				    
+ inc \m		  	
+ inc %rax 	    
+ jmp 1b   
+ 2:
+ pop \m
+ pop %rdx
 
  .endm
 
-.macro print m:req
- len m		
+# print everything to 0 byte from %rsi address 
+ print:
+ push %rax
+ push %rdi
+ push %rdx
+ len %rsi
+ 
+ mov %rax, %rdx 
+ mov $1, %rax
  mov $1, %rdi	
- mov $1, %rdx	
- syscall		    
-.endm
+ syscall
+ pop %rdx
+ pop %rdi
+ pop %rax		    
+ret
 
 /*.macro toStr
  # число в %rax 
@@ -138,13 +158,14 @@ print
 
 .globl _start
 _start:
-fld (t2)
-fsub (t1)
-fstp (res1)
+#fld (t2)
+#fsub (t1)
+#fstp (res1)
 
-print $message
+mov $message, %rsi
+
+call print
 #printFloat (res1)
-
 mov $60,  %rax
 xor %rdi, %rdi 
 syscall
