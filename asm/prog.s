@@ -1,5 +1,8 @@
 # ((10 - 20) * (30.5 + 40)) / 4
 .data
+enter:
+.ascii "\n"
+.space 1, 0
 zero:
 .float 0.0
 one:
@@ -7,7 +10,7 @@ one:
 ten:
 .float 10.0
 t1:
-.float 10.3
+.float 10
 t2:
 .float 20
 t3:
@@ -22,150 +25,182 @@ message:
 
 .bss
 buf:
-.quad
+.skip 8
 buf2:
-.quad 
+.skip 8
+buf3:
+.skip 8
 isNeg:
-.byte 
+.skip 1
 res1:
-.float
+.skip 4
 res2:
-.float
+.skip 4
 res3:
-.float
+.skip 4
 res4:
-.float 
+.skip 4
 
 .text
 
 # len of the string from %rsi address to the 0 byte 
 # %rax - result
- .macro len m:req
+ .macro len
  
- push %rdx 
- push \m
+ push %rdx  
+ push %rsi
+ 
  xor %rax, %rax 
  1:
- mov (\m), %dl	
+ mov (%rsi), %dl	
  cmp $0, %dl	
  jz  2f				    
- inc \m		  	
+ inc %rsi		  	
  inc %rax 	    
  jmp 1b   
  2:
- pop \m
+ 
+ pop %rsi 
  pop %rdx
 
  .endm
 
-# print everything to 0 byte from %rsi address 
- print:
+# print everything to 0 byte from %rsi register address 
+ .macro print
  push %rax
  push %rdi
  push %rdx
- len %rsi
  
- mov %rax, %rdx 
+ len 
+ mov %rax, %rdx
+ 
  mov $1, %rax
  mov $1, %rdi	
  syscall
  pop %rdx
  pop %rdi
  pop %rax		    
-ret
+ .endm
 
-/*.macro toStr
- # число в %rax 
- # подготовка преобразования числа в строку
+# transform uint value from %rax register to string 
+# %rsi - address of the result
+.macro toStr
+
+  push %rax 
+  push %rdi 
+  push %rdx
+  push %rbx 
+  push %rcx 
+  
   movq $0, (buf2)
-  mov $10, %r8    # делитель
-  mov $buf, %rsi  # адрес начала буфера 
-  xor %rdi, %rdi  # обнуляем счетчик
-# преобразуем путем последовательного деления на 10
-toStrlo:
-  xor %rdx, %rdx  # число в rdx:rax
-  div %r8         # делим rdx:rax на r8
-  add $48, %dl    # цифру в символ цифры
-  mov %dl, (%rsi) # в буфер
-  inc %rsi        # на следующую позицию в буфере
-  inc %rdi        # счетчик увеличиваем на 1
-  cmp $0, %rax    # проверка конца алгоритма
-  jnz toStrlo          # продолжим цикл?
-# число записано в обратном порядке,
-# вернем правильный, перенеся в другой буфер 
-  mov $buf2, %rbx # начало нового буфера
-  mov $buf, %rcx  # старый буфер
-  add %rdi, %rcx  # в конец
-  dec %rcx        # старого буфера
-  mov %rdi, %rdx  # длина буфера
-# перенос из одного буфера в другой
-toStrexc:
-  mov (%rcx), %al # из старого буфера
-  mov %al, (%rbx) # в новый
-  dec %rcx        # в обратном порядке  
-  inc %rbx        # продвигаемся в новом буфере
-  dec %rdx        # а в старом в обратном порядке
-  jnz toStrexc         # проверка конца алгоритма 
-  movb $0, (%rbx)
-.endm 
+  mov $10, %r8    
+  mov $buf, %rsi 
+  xor %rdi, %rdi  
 
+1:
+  xor %rdx, %rdx  
+  div %r8         
+  add $48, %dl    
+  mov %dl, (%rsi) 
+  inc %rsi        
+  inc %rdi        
+  cmp $0, %rax    
+  jnz 1b         
+
+  mov $buf2, %rbx 
+  mov $buf, %rcx  
+  add %rdi, %rcx  
+  dec %rcx        
+  mov %rdi, %rdx  
+
+2:
+  mov (%rcx), %al 
+  mov %al, (%rbx) 
+  dec %rcx          
+  inc %rbx        
+  dec %rdx       
+ 
+  jnz 2b          
+  mov $buf2, %rsi 
+  
+  pop %rcx
+  pop %rbx 
+  pop %rdx
+  pop %rdi 
+  pop %rax
+.endm
+
+# f - float to print 
 .macro printFloat f:req
+mov $buf3, %rbx
+
 # is number negative?
 movss (zero), %xmm0 
 movss \f, %xmm1 
 cmpss $1, %xmm0, %xmm1
 pextrb $3, %xmm1, %rax
 cmp $0, %rax 
-jz __floatToStrIsPos
-# change to positive
+jz 1f
+# change to positive and save minus  
+mark:
+movb $'-', (%rbx)
+inc %rbx
 fld (zero) 
 fsub (one)
 fmul \f
 fstp \f
 movb $1, (isNeg) 
-jmp __floatToStrIsNeg
-__floatToStrIsPos:
+jmp 2f
+1:
 movb $0, (isNeg)
-__floatToStrIsNeg:
+2:
 fld \f
 movss \f, %xmm0 
 roundps $3, %xmm0, %xmm0
 movss %xmm0, \f
 cvtss2si \f, %r12
+mov %r12, %rax
+toStr # integer part 
+
+/*5:
+mov (%rsi), %al
+mov %al, (%rbx)
+inc %rbx 
+inc %rsi
+cmp $0, %al 
+jnz 5b*/
+
 fsub \f 
 fstp \f
-mov $6, %r10 
+mov $6, %r10 # number of digits after point 
 
-__floatToStrLocal:
+3:
 fld \f
 cmp $0, %r10
-jz __floatToStrOk
+jz 4f
 dec %r10 
 movss (ten), %xmm0
 movss %xmm0, \f
 fmul \f
 fstp \f
-jmp __floatToStrLocal
-__floatToStrOk:
-cvtss2si \f, %rax # здесь содержится дробное значение 
-toStr
-mov $buf2, %rsi 
-mark:
-print
+jmp 3b
+4:
+cvtss2si \f, %rax # here the number after point 
+mov $buf3, %rsi 
+print 
+
 .endm
-*/
+
 
 
 .globl _start
 _start:
-#fld (t2)
-#fsub (t1)
-#fstp (res1)
+fld (t1)
+fsub (t2)
+fstp (res1) 
 
-mov $message, %rsi
+printFloat (res1)
 
-call print
-#printFloat (res1)
 mov $60,  %rax
 xor %rdi, %rdi 
 syscall

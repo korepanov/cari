@@ -1,1 +1,4 @@
 program.s
+asm/prog.s
+asm/prog.o
+prog
