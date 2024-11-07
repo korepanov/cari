@@ -5,20 +5,19 @@ enter:
 .space 1, 0
 
 t1:
-.int 10
+.quad 10
 t2:
-.int 20
+.quad 20
 t3:
-.int 30 
+.quad 30 
 t4:
-.int 40 
+.quad 40 
 t5:
-.int 4 
-t6:
+.quad 4 
+#t6:
 #.quad -9223372036854775808
-.quad 9223372036854775807
-t7:
-.int -2147483648
+#.quad 9223372036854775807
+
 
 .bss
 buf:
@@ -137,7 +136,9 @@ res4:
 .globl _start
 _start:
 
-mov (t6), %rax
+mov (t1), %rax 
+mov (t2), %rbx 
+sub %rbx, %rax
 
 toStr 
 print 
