@@ -7,6 +7,7 @@ import (
 
 	"github.com/korepanov/cari/internal/myerrors"
 	"github.com/korepanov/cari/internal/program"
+	"github.com/korepanov/cari/internal/sysinfo"
 )
 
 type dispatcher struct {
@@ -91,6 +92,7 @@ func (d *dispatcher) compileError(err error) compileErrorT {
 }
 
 var help = flag.Bool("h", false, "show help")
+var version = flag.Bool("v", false, "show version")
 var astFlag = flag.Bool("ast", false, "show ast")
 var iFlag = "-i"
 var oFlag = "-o"
@@ -110,6 +112,11 @@ func (d *dispatcher) processFlags() error {
 
 	if *help {
 		flag.Usage()
+		return myerrors.ErrHelp
+	}
+
+	if *version {
+		fmt.Printf("%s version %s\n", sysinfo.Name, sysinfo.Version)
 		return myerrors.ErrHelp
 	}
 

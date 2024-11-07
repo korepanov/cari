@@ -1,3 +1,7 @@
+/*
+Korepanov Viacheslav Dmitrievich
+korepanov.viacheslav@yandex.ru
+*/
 package main
 
 import (
