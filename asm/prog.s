@@ -1,31 +1,30 @@
-# ((10 - 20) * (30.5 + 40)) / 4
+# ((10 - 20) * (30 + 40)) / 4
 .data
-zero:
-.float 0.0
-one:
-.float 1.0
-ten:
-.float 10.0
+enter:
+.ascii "\n"
+.space 1, 0
+
 t1:
-.float 10
+.int 10
 t2:
-.float 20
+.int 20
 t3:
-.float 30.5 
+.int 30 
 t4:
-.float 40 
+.int 40 
 t5:
-.float 4 
+.int 4 
+t6:
+#.quad -9223372036854775808
+.quad 9223372036854775807
+t7:
+.int -2147483648
 
 .bss
 buf:
-.skip 8
+.skip 21
 buf2:
-.skip 8
-buf3:
-.skip 8
-buf4:
-.skip 8
+.skip 21
 res1:
 .skip 4
 res2:
@@ -87,6 +86,17 @@ res4:
   push %rcx 
   
   movq $0, (buf2)
+  mov $buf2, %rbx
+  
+  cmp $0, %rax 
+  jge 3f
+  mov $0, %rdx 
+  sub $1, %rdx 
+  imul %rdx  
+  movb $'-', (%rbx)
+  inc %rbx 
+  3:
+  
   mov $10, %r8    
   mov $buf, %rsi 
   xor %rdi, %rdi  
@@ -101,7 +111,6 @@ res4:
   cmp $0, %rax    
   jnz 1b         
 
-  mov $buf2, %rbx 
   mov $buf, %rcx  
   add %rdi, %rcx  
   dec %rcx        
@@ -124,99 +133,16 @@ res4:
   pop %rax
 .endm
 
-# f - float to print 
-.macro printFloat f:req
-push %rax
-push %rbx 
-push %r12
-push %rsi 
-
-mov \f, %rbx
-mov %rbx, (buf4)
-mov $buf3, %rbx
-
-# is number negative?
-movss (zero), %xmm0 
-movss (buf4), %xmm1 
-cmpss $1, %xmm0, %xmm1
-pextrb $3, %xmm1, %rax
-cmp $0, %rax 
-jz 1f
-# change to positive and save minus  
-movb $'-', (%rbx)
-inc %rbx
-fld (zero) 
-fsub (one)
-fmul (buf4)
-fstp (buf4)
-1:
-fld (buf4)
-movss (buf4), %xmm0 
-roundps $3, %xmm0, %xmm0
-movss %xmm0, (buf4)
-cvtss2si (buf4), %r12
-mov %r12, %rax
-toStr # integer part 
-
-5:
-mov (%rsi), %al
-mov %al, (%rbx)
-inc %rbx 
-inc %rsi
-cmp $0, %al 
-jnz 5b
-dec %rbx 
-
-fsub (buf4)
-fstp (buf4)
-mov $6, %r10 # number of digits after point 
-
-3:
-fld (buf4)
-cmp $0, %r10
-jz 4f
-dec %r10 
-movss (ten), %xmm0
-movss %xmm0, (buf4)
-fmul (buf4)
-fstp (buf4)
-jmp 3b
-4:
-cvtss2si (buf4), %rax # here the number after point 
-movb $'.', (%rbx)
-inc %rbx 
-toStr
-6:
-mov (%rsi), %al
-mov %al, (%rbx)
-inc %rbx 
-inc %rsi
-cmp $0, %al 
-jnz 6b
-dec %rbx 
-
-movb $'\n', (%rbx)
-inc %rbx 
-movb $0, (%rbx)
-
-mov $buf3, %rsi 
-print 
-
-pop %rsi
-pop %r12 
-pop %rbx 
-pop %rax
-.endm
-
-
 
 .globl _start
 _start:
-fld (t1)
-fsub (t2)
-fstp (res1) 
 
-printFloat (res1)
+mov (t6), %rax
+
+toStr 
+print 
+mov $enter, %rsi 
+print 
 
 mov $60,  %rax
 xor %rdi, %rdi 
