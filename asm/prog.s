@@ -13,10 +13,12 @@ t3:
 t4:
 .quad 40 
 t5:
-.quad 4 
+.quad 4
+
 #t6:
 #.quad -9223372036854775808
 #.quad 9223372036854775807
+
 
 
 .bss
@@ -25,13 +27,13 @@ buf:
 buf2:
 .skip 21
 res1:
-.skip 4
+.skip 21
 res2:
-.skip 4
+.skip 21
 res3:
-.skip 4
+.skip 21
 res4:
-.skip 4
+.skip 21
 
 .text
 
@@ -139,8 +141,39 @@ _start:
 mov (t1), %rax 
 mov (t2), %rbx 
 sub %rbx, %rax
+mov %rax, (res1)
 
 toStr 
+print 
+mov $enter, %rsi 
+print 
+
+mov (t3), %rax 
+mov (t4), %rbx
+add %rbx, %rax 
+mov %rax, (res2)
+
+toStr 
+print 
+mov $enter, %rsi 
+print 
+
+mov (res1), %rax 
+mov (res2), %rbx 
+imul %rbx, %rax 
+mov %rax, (res3)
+toStr 
+print 
+mov $enter, %rsi 
+print 
+
+mov (res3), %rax
+mov (t5), %rbx 
+cqo
+idiv %rbx
+mov %rax, (res4)
+
+toStr
 print 
 mov $enter, %rsi 
 print 
