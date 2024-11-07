@@ -1,8 +1,5 @@
 # ((10 - 20) * (30.5 + 40)) / 4
 .data
-enter:
-.ascii "\n"
-.space 1, 0
 zero:
 .float 0.0
 one:
@@ -19,9 +16,6 @@ t4:
 .float 40 
 t5:
 .float 4 
-message:
-.ascii "Mymessage"
-.space 1,0
 
 .bss
 buf:
@@ -30,8 +24,8 @@ buf2:
 .skip 8
 buf3:
 .skip 8
-isNeg:
-.skip 1
+buf4:
+.skip 8
 res1:
 .skip 4
 res2:
@@ -132,63 +126,86 @@ res4:
 
 # f - float to print 
 .macro printFloat f:req
+push %rax
+push %rbx 
+push %r12
+push %rsi 
+
+mov \f, %rbx
+mov %rbx, (buf4)
 mov $buf3, %rbx
 
 # is number negative?
 movss (zero), %xmm0 
-movss \f, %xmm1 
+movss (buf4), %xmm1 
 cmpss $1, %xmm0, %xmm1
 pextrb $3, %xmm1, %rax
 cmp $0, %rax 
 jz 1f
 # change to positive and save minus  
-mark:
 movb $'-', (%rbx)
 inc %rbx
 fld (zero) 
 fsub (one)
-fmul \f
-fstp \f
-movb $1, (isNeg) 
-jmp 2f
+fmul (buf4)
+fstp (buf4)
 1:
-movb $0, (isNeg)
-2:
-fld \f
-movss \f, %xmm0 
+fld (buf4)
+movss (buf4), %xmm0 
 roundps $3, %xmm0, %xmm0
-movss %xmm0, \f
-cvtss2si \f, %r12
+movss %xmm0, (buf4)
+cvtss2si (buf4), %r12
 mov %r12, %rax
 toStr # integer part 
 
-/*5:
+5:
 mov (%rsi), %al
 mov %al, (%rbx)
 inc %rbx 
 inc %rsi
 cmp $0, %al 
-jnz 5b*/
+jnz 5b
+dec %rbx 
 
-fsub \f 
-fstp \f
+fsub (buf4)
+fstp (buf4)
 mov $6, %r10 # number of digits after point 
 
 3:
-fld \f
+fld (buf4)
 cmp $0, %r10
 jz 4f
 dec %r10 
 movss (ten), %xmm0
-movss %xmm0, \f
-fmul \f
-fstp \f
+movss %xmm0, (buf4)
+fmul (buf4)
+fstp (buf4)
 jmp 3b
 4:
-cvtss2si \f, %rax # here the number after point 
+cvtss2si (buf4), %rax # here the number after point 
+movb $'.', (%rbx)
+inc %rbx 
+toStr
+6:
+mov (%rsi), %al
+mov %al, (%rbx)
+inc %rbx 
+inc %rsi
+cmp $0, %al 
+jnz 6b
+dec %rbx 
+
+movb $'\n', (%rbx)
+inc %rbx 
+movb $0, (%rbx)
+
 mov $buf3, %rsi 
 print 
 
+pop %rsi
+pop %r12 
+pop %rbx 
+pop %rax
 .endm
 
 
