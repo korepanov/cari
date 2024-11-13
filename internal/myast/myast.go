@@ -40,15 +40,16 @@ func NewAst() Ast {
 
 /*
 The MustAppendNode appends node v to the node with id=parentId of the ast a.
+Returns new id of the node v in the ast.
 Panics if fails to find the node with id=parentId in the ast a.
 */
-func (a *Ast) MustAppendNode(parentId int, v *Node) (id int) {
+func (a *Ast) MustAppendNode(parentId int, v Node) (id int) {
 	node, err := a.Node(parentId)
 	if err != nil {
 		panic(fmt.Errorf("%s : %s, id: %d", myerrors.ErrAppendNode, err, parentId))
 	}
 
-	node.Children = append(node.Children, v)
+	node.Children = append(node.Children, &v)
 	v.Parent = node
 	v.id = a.nextId
 	a.nextId++
@@ -60,22 +61,29 @@ func (a *Ast) MustAppendNode(parentId int, v *Node) (id int) {
 The MustAppend appends the root of the ast v to the node with parentId of the ast a.
 Panics is fails to find the node with id=parentId in the ast a.
 */
-func (a *Ast) MustAppend(parentId int, v *Ast) {
-	var parents []*Node
-	parents = append(parents, v.Root)
+func (a *Ast) MustAppend(parentId int, v Ast) {
+	a.Print()
+	v.Print()
+
+	var parents []Node
+	parents = append(parents, *v.Root)
+
 	id := parentId
 
-	for _, parent := range parents {
-		for _, child := range parent.Children {
+	for i := 0; i < len(parents); i++ {
+		for _, child := range parents[i].Children {
 			if child.Parent.id == v.Root.id {
-				a.MustAppendNode(id, child)
+				a.MustAppendNode(id, *child)
 			} else {
 				child.id = a.nextId
 				a.nextId++
 			}
-			parents = append(parents, child)
+			parents = append(parents, *child)
 		}
 	}
+
+	a.Print()
+	fmt.Println("----------------------------------")
 }
 
 func (n *Node) MyId() int {
@@ -132,7 +140,7 @@ func (n *Node) printInLevel(level int, prevBranchLevels map[int]struct{}) (branc
 		}
 	}
 
-	fmt.Println(n.Value.Lex)
+	fmt.Println(n.id)
 
 	for _, child := range n.Children {
 		branchLevels = child.printInLevel(level+1, branchLevels)
@@ -144,4 +152,18 @@ func (n *Node) printInLevel(level int, prevBranchLevels map[int]struct{}) (branc
 // The Print prints the ast in the terminal.
 func (a *Ast) Print() {
 	a.Root.printInLevel(0, map[int]struct{}{})
+}
+
+// The TerminalNodes return all the terminal nodes from n as root.
+func (n *Node) TerminalNodes() (res []*Node) {
+
+	for _, child := range n.Children {
+		res = append(res, child.TerminalNodes()...)
+	}
+
+	if len(n.Children) == 0 {
+		res = append(res, n)
+	}
+
+	return res
 }
