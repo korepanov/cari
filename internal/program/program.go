@@ -72,12 +72,7 @@ func (p *Program) parse() error {
 The WriteProgram writes the program to the os.Stdout.
 */
 func (p *Program) WriteProgram() {
-	for _, command := range p.Input {
-		for _, token := range command.Tokens {
-			fmt.Print(token.Lex + " ; ")
-		}
-		fmt.Println()
-	}
+	p.makeComment()
 }
 
 /*
