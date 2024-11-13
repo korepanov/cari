@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/korepanov/cari/internal/command"
 	"github.com/korepanov/cari/internal/myast"
@@ -87,8 +88,18 @@ func (p *Program) nextCommand(s *bufio.Scanner) bool {
 		return false
 	}
 	var c command.Command
-	c.Input = s.Text()
-	p.Input = append(p.Input, c)
+	c.Input = removeSpaces(s.Text())
+	if len(c.Input) > 0 {
+		p.Input = append(p.Input, c)
+	}
 
 	return true
+}
+
+func removeSpaces(s string) string {
+	s = strings.ReplaceAll(s, " ", "")
+	s = strings.ReplaceAll(s, "\t", "")
+	s = strings.ReplaceAll(s, "\n", "")
+	s = strings.ReplaceAll(s, "\r", "")
+	return s
 }

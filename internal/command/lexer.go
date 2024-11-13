@@ -28,7 +28,7 @@ func (c *Command) lookAhead() (lexemes.Token, error) {
 }
 
 // The nextToken gets next longest token and removes this token from subinput.
-func (c *Command) nextToken() (lexemes.Token, error) {
+func (c *Command) nextToken(prevToken lexemes.Token) (lexemes.Token, error) {
 
 	var newToken lexemes.Token
 
@@ -64,8 +64,8 @@ loop:
 
 		c.subinput = c.subinput[len(newToken.Lex):]
 
-		if newToken.Lex == "-" { // unary minus
-			newToken, err = c.nextToken()
+		if newToken.Lex == "-" && prevToken.T != lexemes.NumberLexeme { // unary minus
+			newToken, err = c.nextToken(newToken)
 			newToken.Lex = "-" + newToken.Lex
 		}
 
@@ -79,8 +79,9 @@ loop:
 func (c *Command) LexicalAnalyze() error {
 
 	c.subinput = c.Input
+	var newToken lexemes.Token
 
-	for newToken, err := c.nextToken(); len(newToken.Lex) > 0; newToken, err = c.nextToken() {
+	for newToken, err := c.nextToken(newToken); len(newToken.Lex) > 0; newToken, err = c.nextToken(newToken) {
 
 		if err != nil {
 			return fmt.Errorf("%s : %s", myerrors.ErrLexAnalysis, err)
