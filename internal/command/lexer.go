@@ -64,9 +64,21 @@ loop:
 
 		c.subinput = c.subinput[len(newToken.Lex):]
 
-		if newToken.Lex == "-" && prevToken.T != lexemes.NumberLexeme { // unary minus
-			newToken, err = c.nextToken(newToken)
-			newToken.Lex = "-" + newToken.Lex
+		// unary minus
+		if newToken.Lex == "-" {
+			nextToken, err := c.lookAhead()
+
+			if err != nil {
+				return nextToken, err
+			}
+
+			if (prevToken.T == 0 || prevToken.Lex == "(") && nextToken.T == lexemes.NumberLexeme {
+				newToken, err = c.nextToken(newToken)
+				if err != nil {
+					return newToken, err
+				}
+				newToken.Lex = "-" + newToken.Lex
+			}
 		}
 
 		return newToken, err
