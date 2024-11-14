@@ -100,6 +100,8 @@ res4:
   push %rbx 
   push %rcx 
   
+  mov $buf, %rsi 
+  clear
   mov $buf2, %rsi 
   clear
   mov $buf2, %rbx
