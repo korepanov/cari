@@ -30,7 +30,7 @@ func factor(in []lexemes.Token) (ast myast.Ast, err error) {
 	if len(in) == 1 {
 		if in[0].T == lexemes.NumberLexeme {
 			node := myast.NewNode(in[0])
-			ast.MustAppendNode(ast.Root.MyId(), node)
+			ast.MustAppendNode(ast.Root.MyId(), &node)
 
 			return ast, nil
 		}
@@ -72,7 +72,7 @@ func term(in []lexemes.Token) (ast myast.Ast, err error) {
 			var termAst myast.Ast
 
 			node := myast.NewNode(token)
-			nodeId := ast.MustAppendNode(ast.Root.MyId(), node)
+			nodeId := ast.MustAppendNode(ast.Root.MyId(), &node)
 
 			termAst, err = term(t)
 
@@ -80,8 +80,8 @@ func term(in []lexemes.Token) (ast myast.Ast, err error) {
 				return
 			}
 
-			ast.MustAppend(nodeId, termAst)
-			ast.MustAppend(nodeId, factorAst)
+			ast.MustAppend(nodeId, &termAst)
+			ast.MustAppend(nodeId, &factorAst)
 
 			return ast, nil
 		}
@@ -124,7 +124,7 @@ func expr(in []lexemes.Token) (ast myast.Ast, err error) {
 			var node myast.Node
 			node.Parent = ast.Root
 			node.Value = token
-			nodeId := ast.MustAppendNode(ast.Root.MyId(), node)
+			nodeId := ast.MustAppendNode(ast.Root.MyId(), &node)
 
 			exprAst, err = expr(t)
 
@@ -132,8 +132,8 @@ func expr(in []lexemes.Token) (ast myast.Ast, err error) {
 				return
 			}
 
-			ast.MustAppend(nodeId, exprAst)
-			ast.MustAppend(nodeId, termAst)
+			ast.MustAppend(nodeId, &exprAst)
+			ast.MustAppend(nodeId, &termAst)
 
 			return ast, nil
 		}
