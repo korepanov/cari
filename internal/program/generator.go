@@ -84,8 +84,8 @@ func codeOperation(n *myast.Node) asmString {
 	}
 
 	codeFuncs := []func(operation, asmString, asmString, asmString) bool{
-		plus,
-		minus,
+		add,
+		sub,
 		mul,
 		div,
 	}
@@ -106,19 +106,27 @@ func codeOperation(n *myast.Node) asmString {
 	return idToAsm[n.Id()]
 }
 
-func plus(op operation, res asmString, a asmString, b asmString) bool {
+func add(op operation, res asmString, a asmString, b asmString) bool {
 	if op != "+" {
 		return false
 	}
-	fmt.Println(res, "=", a, op, b)
+	fmt.Printf("mov %s, %%rax\n", a)
+	fmt.Printf("mov %s, %%rbx\n", b)
+	fmt.Println("add %rbx, %rax")
+	fmt.Printf("mov %%rax, %s\n", res)
+
 	return true
 }
 
-func minus(op operation, res asmString, a asmString, b asmString) bool {
+func sub(op operation, res asmString, a asmString, b asmString) bool {
 	if op != "-" {
 		return false
 	}
-	fmt.Println(res, "=", a, op, b)
+	fmt.Printf("mov %s, %%rax\n", a)
+	fmt.Printf("mov %s, %%rbx\n", b)
+	fmt.Println("sub %rbx, %rax")
+	fmt.Printf("mov %%rax, %s\n", res)
+
 	return true
 }
 
@@ -126,7 +134,11 @@ func mul(op operation, res asmString, a asmString, b asmString) bool {
 	if op != "*" {
 		return false
 	}
-	fmt.Println(res, "=", a, op, b)
+	fmt.Printf("mov %s, %%rax\n", a)
+	fmt.Printf("mov %s, %%rbx\n", b)
+	fmt.Println("imul %rbx, %rax")
+	fmt.Printf("mov %%rax, %s\n", res)
+
 	return true
 }
 
@@ -134,7 +146,11 @@ func div(op operation, res asmString, a asmString, b asmString) bool {
 	if op != "/" {
 		return false
 	}
-	fmt.Println(res, "=", a, op, b)
+	fmt.Printf("mov %s, %%rax\n", a)
+	fmt.Printf("mov %s, %%rbx\n", b)
+	fmt.Println("cqo")
+	fmt.Println("idiv %rbx")
+	fmt.Printf("mov %%rax, %s\n", res)
 	return true
 }
 
