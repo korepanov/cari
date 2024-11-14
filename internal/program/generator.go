@@ -12,6 +12,13 @@ enter:
 .ascii "\n"
 .space 1, 0
 `
+const bssBegin = `
+.bss
+buf:
+.skip 21
+buf2:
+.skip 21
+`
 
 func (p *Program) makeComment() {
 	fmt.Printf("# This code was made by %s version %s\n", sysinfo.Name, sysinfo.Version)
@@ -28,13 +35,19 @@ func (p *Program) makeData() {
 }
 
 func (p *Program) makeBss() {
+	fmt.Print(bssBegin)
+
+	var maxNonTerminalLen int
 
 	for _, child := range p.Ast.Root.Children {
-		nonTerminalNodes := child.NonTerminalNodes()
-		for _, n := range nonTerminalNodes {
-			fmt.Print(n.Value.Lex, " ")
+		nonTerminalLen := len(child.NonTerminalNodes())
+		if nonTerminalLen > maxNonTerminalLen {
+			maxNonTerminalLen = nonTerminalLen
 		}
-		fmt.Println()
+	}
+
+	for i := 0; i < maxNonTerminalLen; i++ {
+		fmt.Printf("res%d:\n.skip 21\n", i)
 	}
 
 }
