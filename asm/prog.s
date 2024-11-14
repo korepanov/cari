@@ -77,6 +77,19 @@ res4:
  pop %rax		    
  .endm
 
+# clear 21 byte from %rsi
+.macro clear
+ push %rax
+ mov $21, %al
+ 1:
+ movb $0, (%rsi)
+ inc %rsi
+ dec %al 
+ cmp $0, %al 
+ jnz 1b
+ pop %rax
+.endm
+
 # transform uint value from %rax register to string 
 # %rsi - address of the result
 .macro toStr
@@ -87,7 +100,8 @@ res4:
   push %rbx 
   push %rcx 
   
-  movq $0, (buf2)
+  mov $buf2, %rsi 
+  clear
   mov $buf2, %rbx
   
   cmp $0, %rax 

@@ -62,7 +62,7 @@ func (p *Program) parse() error {
 		if err != nil {
 			return fmt.Errorf("%s\n%d\t%s", err, i+1, p.Input[i].Input)
 		}
-		p.Ast.MustAppend(p.Ast.Root.MyId(), &p.Input[i].Ast)
+		p.Ast.MustAppend(p.Ast.Root.Id(), &p.Input[i].Ast)
 	}
 
 	return nil
@@ -74,6 +74,7 @@ The WriteProgram writes the program to the os.Stdout.
 func (p *Program) WriteProgram() {
 	p.makeComment()
 	p.makeData()
+	p.makeBss()
 }
 
 /*

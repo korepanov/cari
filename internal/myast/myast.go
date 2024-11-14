@@ -81,8 +81,12 @@ func (a *Ast) MustAppend(parentId int, v *Ast) {
 	}
 }
 
-func (n *Node) MyId() int {
+func (n *Node) Id() int {
 	return n.id
+}
+
+func (a *Ast) Len() int {
+	return a.nextId
 }
 
 func (a *Ast) Node(id int) (*Node, error) {
@@ -149,7 +153,7 @@ func (a *Ast) Print() {
 	a.Root.printInLevel(0, map[int]struct{}{})
 }
 
-// The TerminalNodes return all the terminal nodes from n as root.
+// The TerminalNodes returns all the terminal nodes from n as root.
 func (n *Node) TerminalNodes() (res []*Node) {
 
 	for _, child := range n.Children {
@@ -158,6 +162,21 @@ func (n *Node) TerminalNodes() (res []*Node) {
 
 	if len(n.Children) == 0 {
 		res = append(res, n)
+	}
+
+	return res
+}
+
+// The NonTerminalNodes returns all the nonterminal nodes from n as root.
+func (n *Node) NonTerminalNodes() (res []*Node) {
+
+	if len(n.Children) > 0 {
+
+		res = append(res, n)
+
+		for _, child := range n.Children {
+			res = append(res, child.NonTerminalNodes()...)
+		}
 	}
 
 	return res

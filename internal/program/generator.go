@@ -23,17 +23,18 @@ func (p *Program) makeData() {
 	terminalNodes := p.Ast.Root.TerminalNodes()
 
 	for _, node := range terminalNodes {
-		fmt.Printf("t%d:\n.quad %s\n", node.MyId(), node.Value.Lex)
+		fmt.Printf("t%d:\n.quad %s\n", node.Id(), node.Value.Lex)
 	}
+}
 
-	var maxTerminalLen int
+func (p *Program) makeBss() {
 
 	for _, child := range p.Ast.Root.Children {
-		terminalLen := len(child.TerminalNodes())
-		if terminalLen > maxTerminalLen {
-			maxTerminalLen = terminalLen
+		nonTerminalNodes := child.NonTerminalNodes()
+		for _, n := range nonTerminalNodes {
+			fmt.Print(n.Value.Lex, " ")
 		}
+		fmt.Println()
 	}
 
-	fmt.Println(maxTerminalLen)
 }
