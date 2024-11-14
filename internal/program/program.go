@@ -75,6 +75,7 @@ func (p *Program) WriteProgram() {
 	p.makeComment()
 	p.makeData()
 	p.makeBss()
+	p.makeText()
 }
 
 /*

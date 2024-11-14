@@ -6,20 +6,6 @@ import (
 	"github.com/korepanov/cari/internal/sysinfo"
 )
 
-const dataBegin = `
-.data
-enter:
-.ascii "\n"
-.space 1, 0
-`
-const bssBegin = `
-.bss
-buf:
-.skip 21
-buf2:
-.skip 21
-`
-
 func (p *Program) makeComment() {
 	fmt.Printf("# This code was made by %s version %s\n", sysinfo.Name, sysinfo.Version)
 }
@@ -50,4 +36,9 @@ func (p *Program) makeBss() {
 		fmt.Printf("res%d:\n.skip 21\n", i)
 	}
 
+}
+
+func (p *Program) makeText() {
+	fmt.Print(textBegin)
+	fmt.Print(textEnd)
 }
