@@ -28,13 +28,13 @@ buf:
 buf2:
 .skip 21
 res1:
-.skip 21
+.skip 8
 res2:
-.skip 21
+.skip 8
 res3:
-.skip 21
+.skip 8
 res4:
-.skip 21
+.skip 8
 
 .text
 

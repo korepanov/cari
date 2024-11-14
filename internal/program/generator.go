@@ -46,7 +46,7 @@ func (p *Program) makeBss() {
 	}
 
 	for i := 0; i < maxNonTerminalLen; i++ {
-		fmt.Printf("res%d:\n.skip 21\n", i)
+		fmt.Printf("res%d:\n.skip 8\n", i)
 	}
 
 }
@@ -55,7 +55,7 @@ func (p *Program) makeText() {
 	fmt.Print(textBegin)
 
 	for _, child := range p.Ast.Root.Children {
-		codeOperation(child)
+		makePrint(codeOperation(child))
 	}
 
 	fmt.Print(textEnd)
@@ -136,4 +136,10 @@ func div(op operation, res asmString, a asmString, b asmString) bool {
 	}
 	fmt.Println(res, "=", a, op, b)
 	return true
+}
+
+func makePrint(res asmString) {
+	fmt.Printf("mov %s, %%rax\n", res)
+	fmt.Print(printConst)
+	fmt.Println()
 }

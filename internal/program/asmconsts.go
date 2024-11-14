@@ -139,3 +139,10 @@ mov $60,  %rax
 xor %rdi, %rdi 
 syscall
 `
+
+const printConst = `
+toStr
+print 
+mov $enter, %rsi 
+print
+`
