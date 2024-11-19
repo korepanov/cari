@@ -64,5 +64,5 @@ go build -o cari main.go
 ```
 
 ## Limits
-**minumum** number: -9223372036854775808  
-**maximum** number: 9223372036854775807
+The **minimum** number: -9223372036854775808  
+The **maximum** number: 9223372036854775807
