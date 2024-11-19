@@ -3,3 +3,4 @@ asm/prog.s
 asm/prog.o
 prog
 .vscode
+release
