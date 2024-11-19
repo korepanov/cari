@@ -1,3 +1,0 @@
-2. Remove folder .vscode from github 
-3. What is the biggest number could be in the compution? Maximum digits after point?
-

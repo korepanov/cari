@@ -86,7 +86,8 @@ func (p *Program) nextCommand(s *bufio.Scanner) bool {
 		return false
 	}
 	var c command.Command
-	c.Input = removeSpaces(s.Text())
+	c.Input = s.Text()
+	c.Subinput = removeSpaces(s.Text())
 	if len(c.Input) > 0 {
 		p.Input = append(p.Input, c)
 	}

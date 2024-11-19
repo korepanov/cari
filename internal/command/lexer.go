@@ -7,11 +7,11 @@ import (
 	"github.com/korepanov/cari/internal/myerrors"
 )
 
-// The lookAhead looks ahead to the next shortest token but does not remove the token from subinput.
+// The lookAhead looks ahead to the next shortest token but does not remove the token from Subinput.
 func (c *Command) lookAhead() (lexemes.Token, error) {
 	var buf string
 
-	for _, ch := range c.subinput {
+	for _, ch := range c.Subinput {
 		buf += string(ch)
 		bufType := Dictionary().Find(lexemes.Lexeme(buf))
 
@@ -20,7 +20,7 @@ func (c *Command) lookAhead() (lexemes.Token, error) {
 		}
 	}
 
-	if len(c.subinput) == 0 {
+	if len(c.Subinput) == 0 {
 		return lexemes.Token{}, nil
 	}
 
@@ -38,18 +38,18 @@ loop:
 
 		buf := string(newToken.Lex)
 
-		for idx, ch := range c.subinput {
+		for idx, ch := range c.Subinput {
 			buf += string(ch)
 			bufType := Dictionary().Find(lexemes.Lexeme(buf))
 
 			if bufType != 0 {
 				newToken.Lex = lexemes.Lexeme(buf)
 				newToken.T = bufType
-				c.subinput = c.subinput[idx+1:]
+				c.Subinput = c.Subinput[idx+1:]
 				break
 			}
 
-			if idx == len(c.subinput)-1 {
+			if idx == len(c.Subinput)-1 {
 				break loop
 			}
 		}
@@ -62,7 +62,7 @@ loop:
 			return newToken, err
 		}
 
-		c.subinput = c.subinput[len(newToken.Lex):]
+		c.Subinput = c.Subinput[len(newToken.Lex):]
 
 		// unary minus
 		if newToken.Lex == "-" {
@@ -90,7 +90,6 @@ loop:
 
 func (c *Command) LexicalAnalyze() error {
 
-	c.subinput = c.Input
 	var newToken lexemes.Token
 
 	for newToken, err := c.nextToken(newToken); len(newToken.Lex) > 0; newToken, err = c.nextToken(newToken) {

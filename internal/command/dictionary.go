@@ -73,9 +73,10 @@ Returns NumberLexeme if lexeme can be a number,
 else - 0.
 */
 func isNumber(lex lexemes.Lexeme) lexemes.LexemeType {
-	_, err := strconv.Atoi(string(lex))
+	_, err := strconv.ParseUint(string(lex), 10, 64)
 	if err == nil {
 		return lexemes.NumberLexeme
 	}
+
 	return 0
 }
