@@ -1,4 +1,4 @@
-# Integer arithmetic expressions to GNU Assembler compiler
+# Compiler of integer arithmetic expressions into assembler code of AT&T syntax
 
 ## Get started 
 1. To make AST:
